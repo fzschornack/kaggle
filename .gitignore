@@ -8,3 +8,5 @@ octave-workspace
 test.csv
 train.csv
 sample_solution.csv
+.DS_Store
+.DS_Store/
