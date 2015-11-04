@@ -1,0 +1,10 @@
+.idea/
+.idea
+project/project
+project/target
+target
+example.csv
+octave-workspace
+test.csv
+train.csv
+sample_solution.csv
