@@ -11,8 +11,8 @@ object HowMuchDidItRain {
 
   def main(args: Array[String]) {
 
-    //val file = "test.txt"
-    val file = "/Users/fzschornack/kaggle/train.csv"
+    val file = "example.csv"
+    //val file = "/Users/fzschornack/kaggle/train.csv"
 
     val conf = new SparkConf().setAppName("How Much Did It Rain?").setMaster("local")
     val sc = new SparkContext(conf)
@@ -21,18 +21,28 @@ object HowMuchDidItRain {
 
     val data = sc.textFile(file).zipWithIndex().filter(_._2 > 0)
 
-    val parsedData = data.map { line =>
-      val parts = line._1.split(",").map( x =>
+    val filteredData = data.map { line =>
+      val parts = line._1.split(",").map(x =>
         x.equals("") match {
-          case true => "0"
-          case false => x
-        } )
+          case true => 0
+          case false => x.toDouble
+        })
+      parts
+    }
+      .filter(x => x(3) != 0 && x.last < 70)
+      .map(x => x.head -> x.tail.drop(1))
+      .reduceByKey( (x, y) => (x, y).zipped.map(_ + _).dropRight(1) ++ Array(x(21)) )
+      .map(_._2)
 
-      val indices = Array(1,2,3,7,11,15,19)
-      LabeledPoint(parts.last.toDouble, Vectors.dense(indices.map(parts).map(_.toDouble)))
+//    filteredData.foreach(x => println(x.mkString(",")))
+
+    val parsedData = filteredData.map { parts =>
+
+      LabeledPoint(parts.last, Vectors.dense(parts.dropRight(1)))
+
     }.cache()
 
-    //parsedData.foreach(println)
+    parsedData.foreach(println)
 
 //    val splits = parsedData.randomSplit(Array(0.7, 0.3), seed = 1L)
 //
@@ -41,14 +51,16 @@ object HowMuchDidItRain {
 //    val test = splits(1)
 
     // Building the model
-    val numIterations = 200
-    val model = LassoWithSGD.train(parsedData, numIterations, 0.2, 1)
+    val numIterations = 500
+    val model = LinearRegressionWithSGD.train(parsedData, numIterations, stepSize = 0.001)
 
     // Evaluate model on training examples and compute training error
     val valuesAndPreds = parsedData.map { point =>
       val prediction = model.predict(point.features)
       (point.label, prediction)
     }
+
+    valuesAndPreds.take(100).foreach(println)
 
     val MSE = valuesAndPreds.map{case(v, p) => math.pow((v - p), 2)}.mean()
     println("training Mean Squared Error = " + MSE)
