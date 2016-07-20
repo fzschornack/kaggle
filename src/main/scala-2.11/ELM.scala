@@ -39,15 +39,15 @@ object ELM {
 
     val inputToHiddenLayerWeights = Matrices.randn(hiddenLayerSize, numberOfFeatures , new Random(seed))
 
-    input.persist(StorageLevel.MEMORY_AND_DISK)
+    inputToHiddenLayerWeights.toArray.foreach(println)
 
     val elmLabeledPoints = input.map { lp =>
 
       val label = lp.label
       val elmFeatures = inputToHiddenLayerWeights.multiply(lp.features) // wx
-        .values.map(logisticFunction) // g(wx)
+        .values//.map( x => logisticFunction(math.log10(x))) // g(wx)
 
-      LabeledPoint(label, Vectors.dense(elmFeatures))
+      LabeledPoint(label, Vectors.dense(Array(-1.0) ++ elmFeatures))
 
     }
 
@@ -56,6 +56,14 @@ object ELM {
 
   private def logisticFunction(wx: Double): Double = {
     1 / (1 + math.exp(-wx))
+  }
+
+  private def tanhFunction(wx: Double): Double = {
+    (math.exp(wx) - math.exp(-wx)) / (math.exp(wx) + math.exp(-wx))
+  }
+
+  private def rectifiedLinearFunction(wx: Double): Double = {
+    math.max(0, wx)
   }
 
 }

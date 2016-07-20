@@ -80,10 +80,10 @@ object AngelDataVis {
         seniorCompensationDouble = seniorCompensationRaw.replace("£", "").toDouble * 1.37
       }
 
-      // Japanese Yen - ¥
+      // Chinese Yuan - ¥
       else if (juniorCompensationRaw.contains("¥")) {
-        juniorCompensationDouble = juniorCompensationRaw.replace("¥", "").toDouble * 1.37
-        seniorCompensationDouble = seniorCompensationRaw.replace("¥", "").toDouble * 1.37
+        juniorCompensationDouble = juniorCompensationRaw.replace("¥", "").toDouble * 0.15
+        seniorCompensationDouble = seniorCompensationRaw.replace("¥", "").toDouble * 0.15
       }
 
       // USD - $
